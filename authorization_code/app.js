@@ -7,6 +7,8 @@
  * https://developer.spotify.com/web-api/authorization-guide/#authorization_code_flow
  */
 
+var numSongs = 10; //make this user definable in the future
+
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var cors = require('cors');
@@ -115,18 +117,41 @@ app.get('/callback', function(req, res) {
             json: true
           };
           request.get(getRequest, function (error, response, body) {
-            console.error('error:', error); // Print the error if one occurred
-            console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-            console.log('body:', body); // Print the HTML for the Google homepage. 
+            //console.error('error:', error); // Print the error if one occurred
+            //console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+            //console.log('body:', body); // Print the HTML for the Google homepage. 
             var playlistId;
             items = body.items
+            var length;
             for(var i = 0; i < items.length; i++)
             {
-              if(items[i].name === "music")
+              if(items[i].name === "music") {
                 playlistId = items[i].id
+                length = items[i].tracks.total
+              }
             }
-            console.log(playlistId)
-            
+            //console.log(playlistId)
+            var getPlaylistItems = {
+              url: 'https://api.spotify.com/v1/playlists/' + playlistId + '/tracks?offset=' + (length - numSongs),
+              headers: { 'Authorization': 'Bearer ' + access_token },
+              json: true
+            };
+            request.get(getPlaylistItems, function (error, response, body) {
+              items = body.items
+              let tracks = new Array(numSongs)
+              for(var i = 0; i < tracks.length; i++)
+             {
+               tracks[i] = items[i].track.uri
+             }
+             if(//app created playlist exists)
+             {
+               //add songs to playlist
+             }
+             else
+             {
+               //create new playlist
+             }
+            });
           });
         });
 
