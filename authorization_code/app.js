@@ -8,6 +8,9 @@
  */
 
 var numSongs = 10; //make this user definable in the future
+var playlistExists = false;
+var playlist = "music";
+var existingPlaylistId;
 
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
@@ -111,8 +114,9 @@ app.get('/callback', function(req, res) {
         request.get(options, function(error, response, body) {
           //console.log(body);
           //console.log(body.id)
+          var userId = body.id
           var getRequest = {
-            url: 'https://api.spotify.com/v1/users/' + body.id + '/playlists',
+            url: 'https://api.spotify.com/v1/users/' + userId + '/playlists',
             headers: { 'Authorization': 'Bearer ' + access_token },
             json: true
           };
@@ -125,11 +129,18 @@ app.get('/callback', function(req, res) {
             var length;
             for(var i = 0; i < items.length; i++)
             {
-              if(items[i].name === "music") {
+              if(items[i].name === playlist) {
                 playlistId = items[i].id
                 length = items[i].tracks.total
               }
+              else if(items[i].name == 'Latest ' + numSongs + ' Songs - ' + playlist)
+              {
+                playlistExists = true;
+                existingPlaylistId = items[i].id;
+                //console.log(existingPlaylistId)
+              }
             }
+            
             //console.log(playlistId)
             var getPlaylistItems = {
               url: 'https://api.spotify.com/v1/playlists/' + playlistId + '/tracks?offset=' + (length - numSongs),
@@ -138,19 +149,43 @@ app.get('/callback', function(req, res) {
             };
             request.get(getPlaylistItems, function (error, response, body) {
               items = body.items
+              //console.log(items)
               let tracks = new Array(numSongs)
               for(var i = 0; i < tracks.length; i++)
-             {
-               tracks[i] = items[i].track.uri
-             }
-             if(//app created playlist exists)
-             {
-               //add songs to playlist
-             }
-             else
-             {
-               //create new playlist
-             }
+              {
+                tracks[i] = items[i].track.uri
+              }
+              //console.log(typeof(tracks[1]))
+              if(playlistExists == false)
+              {
+               let playlistName = 'Latest ' + numSongs + ' Songs - ' + playlist
+               var requestData = {
+                 name: playlistName,
+                 description: 'This playlist was created by LatestSongs'
+               };
+               request({
+                url: 'https://api.spotify.com/v1/users/' + userId + '/playlists',
+                headers: { 'Authorization': 'Bearer ' + access_token },
+                method: "POST",
+                json: requestData
+              }, function (error, response, body) {
+                console.log(body)
+                existingPlaylistId = body.id
+              });
+              }
+              tracks.reverse()
+              var requestData = {
+                uris: tracks
+              }
+              request({
+                url: 'https://api.spotify.com/v1/playlists/' + existingPlaylistId + '/tracks',
+                headers: { 'Authorization': 'Bearer ' + access_token },
+                method: "PUT",
+                json: requestData
+              }, function (error, response, body) {
+                console.log(body)
+                existingPlaylistId = body.id
+              });
             });
           });
         });
