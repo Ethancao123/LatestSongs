@@ -12,6 +12,7 @@ var playlistExists = false;
 var playlist = "music";
 var existingPlaylistId;
 
+const config = require('./config.json');
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var cors = require('cors');
@@ -20,9 +21,9 @@ var cookieParser = require('cookie-parser');
 var readline = require('readline');
 const { GuildAuditLogsEntry } = require('discord.js');
 
-var client_id = 'edd77308986c4c64a15d2860695c8b3b'; // Your client id
-var client_secret = '96932bcca4654808ad4e5924f3d0ec51'; // Your secret
-var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
+var client_id = config.id; // Your client id
+var client_secret = config.secret; // Your secret
+var redirect_uri = config.uri; // Your redirect uri
 
 const rl = readline.createInterface({
   input: process.stdin,
