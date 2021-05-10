@@ -1,0 +1,5 @@
+{
+    "id": "CLIENT_ID",
+    "secret": "CLIENT_SECRET",
+    "uri": "URI"
+}

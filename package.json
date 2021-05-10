@@ -1,0 +1,19 @@
+{
+  "name": "latestsongs",
+  "version": "1.0.0",
+  "description": "Yep",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ethancao123/LatestSongs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ethancao123/LatestSongs/issues"
+  },
+  "homepage": "https://github.com/Ethancao123/LatestSongs#readme"
+}
