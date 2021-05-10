@@ -19,7 +19,6 @@ var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 var readline = require('readline');
-const { GuildAuditLogsEntry } = require('discord.js');
 
 var client_id = config.id; // Your client id
 var client_secret = config.secret; // Your secret
