@@ -1,12 +1,3 @@
-/**
- * This is an example of a basic node.js script that performs
- * the Authorization Code oAuth2 flow to authenticate against
- * the Spotify Accounts.
- *
- * For more information, read
- * https://developer.spotify.com/web-api/authorization-guide/#authorization_code_flow
- */
-
 var numSongs = 10; //make this user definable in the future
 var playlistExists = false;
 var playlist = "music";
@@ -19,6 +10,10 @@ var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 var readline = require('readline');
+var path = require('path');
+var bodyParser = require("body-parser");
+var waitUntil = require('wait-until');
+var delay = require('delay');
 
 var client_id = config.id; // Your client id
 var client_secret = config.secret; // Your secret
@@ -50,7 +45,9 @@ var app = express();
 
 app.use(express.static(__dirname + '/public'))
    .use(cors())
-   .use(cookieParser());
+   .use(cookieParser())
+   .use(bodyParser.urlencoded({ extended: false }))
+   .use(bodyParser.json());
 
 app.get('/login', function(req, res) {
 
@@ -73,7 +70,6 @@ app.get('/callback', function(req, res) {
 
   // your application requests refresh and access tokens
   // after checking the state parameter
-
   var code = req.query.code || null;
   var state = req.query.state || null;
   var storedState = req.cookies ? req.cookies[stateKey] : null;
@@ -101,6 +97,7 @@ app.get('/callback', function(req, res) {
     request.post(authOptions, function(error, response, body) {
       if (!error && response.statusCode === 200) {
 
+
         var access_token = body.access_token,
             refresh_token = body.refresh_token;
 
@@ -115,6 +112,22 @@ app.get('/callback', function(req, res) {
           //console.log(body);
           //console.log(body.id)
           var userId = body.id
+
+          let playlistName = 'Latest ' + numSongs + ' Songs - ' + playlist
+               var requestData = {
+                 name: playlistName,
+                 description: 'This playlist was created by LatestSongs'
+               };
+               request({
+                url: 'https://api.spotify.com/v1/users/' + userId + '/playlists',
+                headers: { 'Authorization': 'Bearer ' + access_token },
+                method: "POST",
+                json: requestData
+              }, function (error, response, body) {
+                console.log(body)
+                existingPlaylistId = body.id
+              });
+
           var getRequest = {
             url: 'https://api.spotify.com/v1/users/' + userId + '/playlists',
             headers: { 'Authorization': 'Bearer ' + access_token },
@@ -127,6 +140,7 @@ app.get('/callback', function(req, res) {
             var playlistId;
             items = body.items
             var length;
+            
             for(var i = 0; i < items.length; i++)
             {
               if(items[i].name === playlist) {
@@ -140,23 +154,7 @@ app.get('/callback', function(req, res) {
                 //console.log(existingPlaylistId)
               }
             }
-            
-            //console.log(playlistId)
-            var getPlaylistItems = {
-              url: 'https://api.spotify.com/v1/playlists/' + playlistId + '/tracks?offset=' + (length - numSongs),
-              headers: { 'Authorization': 'Bearer ' + access_token },
-              json: true
-            };
-            request.get(getPlaylistItems, function (error, response, body) {
-              items = body.items
-              //console.log(items)
-              let tracks = new Array(numSongs)
-              for(var i = 0; i < tracks.length; i++)
-              {
-                tracks[i] = items[i].track.uri
-              }
-              //console.log(typeof(tracks[1]))
-              if(playlistExists == false)
+            if(false)//playlistExists == false)
               {
                let playlistName = 'Latest ' + numSongs + ' Songs - ' + playlist
                var requestData = {
@@ -173,7 +171,27 @@ app.get('/callback', function(req, res) {
                 existingPlaylistId = body.id
               });
               }
+            //console.log(playlistId)
+            var getPlaylistItems = {
+              url: 'https://api.spotify.com/v1/playlists/' + playlistId + '/tracks?offset=' + (length - numSongs),
+              headers: { 'Authorization': 'Bearer ' + access_token },
+              json: true
+            };
+            request.get(getPlaylistItems, function (error, response, body) {
+              items = body.items
+              //console.log(items)
+              let tracks = new Array(numSongs)
+              for(var i = 0; i < numSongs; i++)
+              {
+                tracks[i] = items[i].track.uri
+              }
+              //console.log(typeof(tracks[1]))
+              
               tracks.reverse()
+              console.log('before')
+              delay(10000)
+              console.log('after')
+              console.log(tracks)
               var requestData = {
                 uris: tracks
               }
@@ -210,6 +228,29 @@ app.get('/callback', function(req, res) {
     });
   }
 });
+
+app.route('/spotifyLogin')
+  .get(function (req, res) {
+    res.send('yep')
+  })
+  .post(function (req, res) {
+    var options = {
+      root: path.join(__dirname, '/public')
+    };
+    
+    var fileName = 'spotifyLogin.html';
+    res.sendFile(fileName, options, function (err) {
+      if (err) {
+          next(err);
+      } else {
+          //console.log('Sent:', fileName);
+      }
+    console.log(req.body.name)  
+    console.log(req.body.number)  
+    playlist = req.body.name
+    numSongs = req.body.number
+  });
+  })
 
 app.get('/refresh_token', function(req, res) {
 
