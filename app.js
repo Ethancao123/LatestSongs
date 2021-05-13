@@ -1,5 +1,5 @@
 var numSongs = 10; //make this user definable in the future
-var playlistExists = false;
+var playlistExists = false; //need to fix this later no clue how
 var playlist = "music";
 var existingPlaylistId;
 
@@ -7,18 +7,16 @@ const config = require('./config.json');
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var cors = require('cors');
-var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
-var readline = require('readline');
 var path = require('path');
 var bodyParser = require("body-parser");
-var waitUntil = require('wait-until');
 var delay = require('delay');
 
 var client_id = config.id; // Your client id
 var client_secret = config.secret; // Your secret
 var redirect_uri = config.uri; // Your redirect uri
 
+//figure out what this does
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -49,6 +47,7 @@ app.use(express.static(__dirname + '/public'))
    .use(bodyParser.urlencoded({ extended: false }))
    .use(bodyParser.json());
 
+//after you click the log in with spotify button
 app.get('/login', function(req, res) {
 
   var state = generateRandomString(16);
@@ -66,6 +65,7 @@ app.get('/login', function(req, res) {
     }));
 });
 
+//after spotify authoizes user
 app.get('/callback', function(req, res) {
 
   // your application requests refresh and access tokens
@@ -118,7 +118,7 @@ app.get('/callback', function(req, res) {
                  name: playlistName,
                  description: 'This playlist was created by LatestSongs'
                };
-               request({
+               request({ //sends spotify user data
                 url: 'https://api.spotify.com/v1/users/' + userId + '/playlists',
                 headers: { 'Authorization': 'Bearer ' + access_token },
                 method: "POST",
@@ -133,6 +133,7 @@ app.get('/callback', function(req, res) {
             headers: { 'Authorization': 'Bearer ' + access_token },
             json: true
           };
+          //yoink user playlists
           request.get(getRequest, function (error, response, body) {
             //console.error('error:', error); // Print the error if one occurred
             //console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
@@ -177,6 +178,7 @@ app.get('/callback', function(req, res) {
               headers: { 'Authorization': 'Bearer ' + access_token },
               json: true
             };
+            //gets the last few tracks of the playlist
             request.get(getPlaylistItems, function (error, response, body) {
               items = body.items
               //console.log(items)
@@ -195,6 +197,7 @@ app.get('/callback', function(req, res) {
               var requestData = {
                 uris: tracks
               }
+              //adds songs to the new playlist
               request({
                 url: 'https://api.spotify.com/v1/playlists/' + existingPlaylistId + '/tracks',
                 headers: { 'Authorization': 'Bearer ' + access_token },
