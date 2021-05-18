@@ -11,16 +11,14 @@ var cookieParser = require('cookie-parser');
 var path = require('path');
 var bodyParser = require("body-parser");
 var delay = require('delay');
+var querystring = require('querystring');
 
 var client_id = config.id; // Your client id
 var client_secret = config.secret; // Your secret
 var redirect_uri = config.uri; // Your redirect uri
 
-//figure out what this does
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
+//Used for Favicon loading
+
 
 /**
  * Generates a random string containing numbers and letters
@@ -45,7 +43,8 @@ app.use(express.static(__dirname + '/public'))
    .use(cors())
    .use(cookieParser())
    .use(bodyParser.urlencoded({ extended: false }))
-   .use(bodyParser.json());
+   .use(bodyParser.json())
+   .use("/public", express.static('public')); 
 
 //after you click the log in with spotify button
 app.get('/login', function(req, res) {
@@ -144,16 +143,17 @@ app.get('/callback', function(req, res) {
             
             for(var i = 0; i < items.length; i++)
             {
-              if(items[i].name === playlist) {
+              if(items[i].name.toLowerCase() === playlist.toLowerCase()) {
                 playlistId = items[i].id
                 length = items[i].tracks.total
+                playlist = items[i].name
               }
-              else if(items[i].name == 'Latest ' + numSongs + ' Songs - ' + playlist)
-              {
-                playlistExists = true;
-                existingPlaylistId = items[i].id;
-                //console.log(existingPlaylistId)
-              }
+              // else if(items[i].name == 'Latest ' + numSongs + ' Songs - ' + playlist)
+              // {
+              //   playlistExists = true;
+              //   existingPlaylistId = items[i].id;
+              //   //console.log(existingPlaylistId)
+              // }
             }
             if(false)//playlistExists == false)
               {
@@ -190,10 +190,10 @@ app.get('/callback', function(req, res) {
               //console.log(typeof(tracks[1]))
               
               tracks.reverse()
-              console.log('before')
+              //console.log('before')
               delay(10000)
-              console.log('after')
-              console.log(tracks)
+              //console.log('after')
+              //console.log(tracks)
               var requestData = {
                 uris: tracks
               }
