@@ -123,7 +123,7 @@ app.get('/callback', function(req, res) {
                 method: "POST",
                 json: requestData
               }, function (error, response, body) {
-                console.log(body)
+                //console.log(body)
                 existingPlaylistId = body.id
               });
 
@@ -248,8 +248,8 @@ app.route('/spotifyLogin')
       } else {
           //console.log('Sent:', fileName);
       }
-    console.log(req.body.name)  
-    console.log(req.body.number)  
+    //console.log(req.body.name)  
+    //console.log(req.body.number)  
     playlist = req.body.name
     numSongs = req.body.number
   });
